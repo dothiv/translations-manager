@@ -1,0 +1,4 @@
+dot_hiv_translations_manager:
+    resource: "@DotHivTranslationsManagerBundle/Resources/config/routing.yml"
+    prefix:   /
+
