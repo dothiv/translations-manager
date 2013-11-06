@@ -141,37 +141,81 @@
             }
 
             transconv.controller('convertController', ['$scope', '$http', 'fileReader', function($scope, $http, fileReader) {
-                    $scope.errors = ['No CSV file given.'];
+                    function getJsonFromCsv(data, keyCol, valCol) {
+                        var csv = $.csv.toArrays(data);
+                        var keys = [];
+                        var vals = {};
+                        var errors = [];
+                        var tree = {};
+
+                        angular.forEach(csv, function(row) {
+                            var key = row[keyCol];
+                            var val = row[valCol];
+                            keys.push();
+                            if (!key.match(REGEX_KEY))
+                                errors.push('The key "' + key + '" is invalid. Please only use A-z, 0-9, dots for seperation and no numbers in the beginning or after dots.');
+                            if (key in vals)
+                                errors.push('The key "' + key + '" is used twice.');
+                            vals[key] = val;
+                        });
+
+                        keys.sort();
+
+                        angular.forEach(vals, function(val, key) {
+                            if (!key.match(REGEX_KEY)) return;
+                            if (!setKey(tree, key, val))
+                                errors.push('A prefix of the key "' + key + '" is already in use.');
+                        });
+
+                        return {tree: tree, errors: errors};
+                    };
+
+                    function processCsvFile(csv) {
+                        $scope.translations = {};
+                        $scope.csverrors = [];
+                        angular.forEach({'de':2, 'en':3}, function(valCol, locale) {
+                            var result = getJsonFromCsv(csv, 1, valCol);
+                            $scope.translations[locale] = result.tree;
+                            $scope.csverrors = $scope.csverrors.concat(result.errors);
+                        });
+                    }
+
+                    $scope.$watch('translations', function() {
+                        $scope.jsonpreview = JSON.stringify($scope.translations, undefined, 2);
+                    });
+
+                    $scope.$watch('file', function() {
+                        if (!$scope.file) {
+                            $scope.translations = {};
+                            $scope.csverrors = [];
+                        }
+                    });
+
                     $scope.getFile = function () {
-                        fileReader.readAsText($scope.file, $scope)
-                            .then(function(result) {
-                                $scope.csv = $.csv.toArrays(result);
-                                $scope.keys = [];
-                                $scope.vals = {};
-                                $scope.errors = [];
-                                $scope.tree = {};
-                                angular.forEach($scope.csv, function(row) {
-                                    $scope.keys.push(row[1]);
-                                    if (!row[1].match(REGEX_KEY))
-                                        $scope.errors.push('The key "' + row[1] + '" is invalid. Please only use A-z, 0-9, dots for seperation and no numbers in the beginning or after dots.');
-                                    if (row[1] in $scope.vals)
-                                        $scope.errors.push('The key "' + row[1] + '" is used twice.');
-                                    $scope.vals[row[1]] = row[2];
-                                });
-                                $scope.keys.sort();
-                                angular.forEach($scope.vals, function(val, key) {
-                                    if (!key.match(REGEX_KEY))
-                                        return;
-                                    if (!setKey($scope.tree, key, val))
-                                        $scope.errors.push('The key "' + key + '" (or part of it) is used twice.');
-                                });
-                                $scope.treejson = JSON.stringify($scope.tree, undefined, 2);
+                        fileReader.readAsText($scope.file, $scope).then(processCsvFile);
+                    };
+
+                    $scope.commit = function() {
+                        var data = {
+                                    user: 'nils.wisiol@dothiv.org',
+                                    files: $scope.translations,
+                                };
+                        $scope.commiting = true;
+                        $http.post('{{ path('dot_hiv_translations_manager_commit') }}', data)
+                            .success(function(data, status, headers, config) {
+                                $scope.commiting = false;
+                            })
+                            .error(function(data, status, headers, config) {
+                                $scope.httperror = data; 
                             });
                     };
 
-                    $scope.copyToClipboard = function(text) {
-                        var copy = text.createTextRange();
-                        copy.execCommand("Copy");
+                    $scope.ignoreCsvError = function(id) {
+                        $scope.csverrors.splice(id,1);
+                    };
+
+                    $scope.ignoreCsvErrors = function() {
+                        $scope.csverrors = [];
                     };
 
                     $scope.doc = {};
@@ -216,31 +260,39 @@
                 <div class="col-lg-12">
                     <h3>2. Update the Repository</h3>
                 
+                    <a href="" class="btn btn-default pull-right" ng-click="file=false" ng-show="file">Remove file and start over</a>
                     <h4>Update Charity Translations</h4>
                     <p>Commit the new translations permanently to the github repository.</p>
-                    <form novalidate class="simple-form">
-                        <input type="file" ng-file-select="onFileSelect($files)" >
-                        
-                        <div ng-show="errors.length > 0 && file">
-                            <div class="alert alert-danger">Some things need to be fixed in this CSV file.</div>
-                            <ul>
-                                <li ng-repeat="error in errors">[[ error ]]</li>
-                            </ul>
-                        </div>
-                        <div ng-show="errors.length == 0">
-                            <div class="alert alert-success">Look nice. You're good to go.</div>
-                        </div>
-                        
-{#                         <input type="text" ng-bind="msg" placeholder="A short description of your changes.">#}
-{#                         <a href="#" ng-click="" role="button" class="btn btn-success" ng-enabled="errors.length == 0">Update</a>#}
-                    </form>
+                    
+                    <div ng-hide="commiting">
+                        <form novalidate class="simple-form">
+                            <input ng-hide="file" type="file" ng-file-select="onFileSelect($files)" >
+                            
+                            <div ng-show="csverrors.length > 0 && file">
+                                <div class="alert alert-danger">Some things need to be fixed in this CSV file.</div>
+                                <a class="btn btn-danger pull-right" href="" ng-click="ignoreCsvErrors()">Danger: ignore all errors</a>
+                                <ul>
+                                    <li ng-repeat="(id, csverror) in csverrors">[[ csverror ]] <a href="" ng-click="ignoreCsvError(id)">Ignore this error once.</a></li>
+                                </ul>
+                            </div>
+                            <div ng-show="csverrors.length == 0 && file">
+                                <div class="alert alert-success">Looks nice. You're good to go.</div>
+{#                                 <input type="text" ng-bind="msg" placeholder="A short description of your changes.">#}
+{#                                 <a href="#" ng-click="diff()" role="button" class="btn btn-success" ng-enabled="errors.length == 0">Get diff</a>#}
+                            </div>
+                            
+                        </form>
+                    </div>
+                    <div ng-show="committing">
+                        <div class="alert alert-info">Stand back and let me do that for you.</div>
+                    </div>
                     
                 </div>
             </div>
             <div class="row">
                 <div class="col-lg-12">
-                    <h3>Preview JSON</h3>
-                    <pre style="overflow-x: scroll;" id="treejson">[[ treejson ]]</pre>
+                    <h3>Preview</h3>
+                    <pre style="overflow-x: scroll;">[[ jsonpreview ]]</pre>
                 </div>
             </div>
         </div>
