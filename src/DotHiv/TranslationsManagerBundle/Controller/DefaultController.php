@@ -31,8 +31,8 @@ class DefaultController extends Controller
         foreach($data->files as $locale => $file) {
             $git->change('src/DotHiv/WebsiteCharityBundle/Resources/public/translations/language-'. $locale .'.json', $file);
         }
-        
-        return new Response();
+
+        return new Response($git->diff());
     }
 
 //     public function getCsvAction($key)

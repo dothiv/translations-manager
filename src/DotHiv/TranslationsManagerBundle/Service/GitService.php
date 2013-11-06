@@ -32,6 +32,10 @@ class GitService {
         $this->exec('git reset HEAD --hard');
     }
 
+    public function diff() {
+        return $this->exec('git diff');
+    }
+
     private function cloneRepository() {
         if (!file_exists($this->path . '/.git')) {
             mkdir($this->path, 0700, true);
