@@ -1,3 +1,7 @@
 dot_hiv_translations_manager_homepage:
-    pattern:  /hello/{name}
+    pattern:  /
     defaults: { _controller: DotHivTranslationsManagerBundle:Default:index }
+
+#dot_hiv_translations_manager_csv:
+#    pattern:  /csv/{key}
+#    defaults: { _controller: DotHivTranslationsManagerBundle:Default:getCsv }
