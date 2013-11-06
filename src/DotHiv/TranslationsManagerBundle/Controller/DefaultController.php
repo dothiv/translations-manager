@@ -15,11 +15,23 @@ class DefaultController extends Controller
     public function diffAction()
     {
         $git = $this->get('git');
+
+        // parse input
+        $data = json_decode($this->getRequest()->getContent());
+
+        // get the most recent updates
         try {
             $git->update();
         } catch (\Exception $e) {
             return new Response($e->getMessage(), 500);
         }
+
+        // make the changes
+        $git->discard();
+        foreach($data->files as $locale => $file) {
+            $git->change('src/DotHiv/WebsiteCharityBundle/Resources/public/translations/language-'. $locale .'.json', $file);
+        }
+        
         return new Response();
     }
 

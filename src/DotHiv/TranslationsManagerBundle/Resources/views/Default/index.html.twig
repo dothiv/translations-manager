@@ -199,8 +199,12 @@
                     $scope.diff = function() {
                         var data = {
                                     user: 'nils.wisiol@dothiv.org',
-                                    files: $scope.translations,
+                                    files: {},
                                 };
+
+                        angular.forEach($scope.translations, function(translations, locale) {
+                            data.files[locale] = JSON.stringify(translations, undefined, 2)
+                        });
                         $scope.commiting = true;
                         $scope.httperror = false; 
                         $http.post('{{ path('dot_hiv_translations_manager_diff') }}', data)

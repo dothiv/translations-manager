@@ -13,15 +13,32 @@ class GitService {
     }
 
     public function update() {
-        $this->cloneRepository();
+        if (!$this->cloneRepository())
+            $this->discard();
         $this->pull();
+    }
+
+    public function change($file, $content) {
+        $fh = fopen($this->path . '/' . $file, 'w');
+        fwrite($fh, $content);
+        fclose($fh);
+    }
+
+    public function status() {
+        return $this->exec('git status');
+    }
+
+    public function discard() {
+        $this->exec('git reset HEAD --hard');
     }
 
     private function cloneRepository() {
         if (!file_exists($this->path . '/.git')) {
             mkdir($this->path, 0700, true);
             $this->exec('git clone --depth 1 \'' . $this->remote  . '\' .');
+            return true;
         }
+        return false;
     }
 
     private function pull() {
