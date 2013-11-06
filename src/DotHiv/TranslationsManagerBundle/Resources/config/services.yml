@@ -1,7 +1,7 @@
 parameters:
-#    dot_hiv_translations_manager.example.class: DotHiv\TranslationsManagerBundle\Example
+    dot_hiv_translations_manager.git.class: DotHiv\TranslationsManagerBundle\Service\GitService
 
 services:
-#    dot_hiv_translations_manager.example:
-#        class: %dot_hiv_translations_manager.example.class%
-#        arguments: [@service_id, "plain_value", %parameter%]
+    git:
+        class: %dot_hiv_translations_manager.git.class%
+        arguments: [%gitrepo%,%gitremote%]

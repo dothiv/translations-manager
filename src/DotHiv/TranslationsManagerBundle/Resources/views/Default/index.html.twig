@@ -120,7 +120,6 @@
                 if (key[0] == path || !angular.isObject(base)) {
                     // check if there's already a value
                     if (!angular.isObject(base) || key[0] in base) {
-                        console.log('Overwrite existing value!');
                         return false;
                     }
                     // set the value, then we are done
@@ -188,6 +187,8 @@
                         if (!$scope.file) {
                             $scope.translations = {};
                             $scope.csverrors = [];
+                            $scope.httperror = false;
+                            $('#resetbtn').click(); // evil hack to clear file input. Ugly as hell, but working :-(
                         }
                     });
 
@@ -195,18 +196,22 @@
                         fileReader.readAsText($scope.file, $scope).then(processCsvFile);
                     };
 
-                    $scope.commit = function() {
+                    $scope.diff = function() {
                         var data = {
                                     user: 'nils.wisiol@dothiv.org',
                                     files: $scope.translations,
                                 };
                         $scope.commiting = true;
-                        $http.post('{{ path('dot_hiv_translations_manager_commit') }}', data)
+                        $scope.httperror = false; 
+                        $http.post('{{ path('dot_hiv_translations_manager_diff') }}', data)
                             .success(function(data, status, headers, config) {
+                                console.log("http success");
                                 $scope.commiting = false;
                             })
                             .error(function(data, status, headers, config) {
+                                console.log("httperror: " + data);
                                 $scope.httperror = data; 
+                                $scope.commiting = false;
                             });
                     };
 
@@ -218,7 +223,7 @@
                         $scope.csverrors = [];
                     };
 
-                    $scope.doc = {};
+                    $scope.limit = 5;
                     $scope.convert = function() {
                 };
             }]);
@@ -267,18 +272,26 @@
                     <div ng-hide="commiting">
                         <form novalidate class="simple-form">
                             <input ng-hide="file" type="file" ng-file-select="onFileSelect($files)" >
+                            <input type="reset" id="resetbtn" ng-show="false">
                             
                             <div ng-show="csverrors.length > 0 && file">
                                 <div class="alert alert-danger">Some things need to be fixed in this CSV file.</div>
+                                <select ng-model='limit'>
+                                    <option value='5'>Show first 5</option>
+                                    <option value='25'>Show first 25</option>
+                                    <option value='50'>Show first 50</option>
+                                    <option value='9007199254740992'>Show all</option> <!-- javascript int max -->
+                                </select>
                                 <a class="btn btn-danger pull-right" href="" ng-click="ignoreCsvErrors()">Danger: ignore all errors</a>
                                 <ul>
-                                    <li ng-repeat="(id, csverror) in csverrors">[[ csverror ]] <a href="" ng-click="ignoreCsvError(id)">Ignore this error once.</a></li>
+                                    <li ng-repeat="(id, csverror) in csverrors | limitTo: limit">[[ csverror ]] <a href="" ng-click="ignoreCsvError(id)">Ignore this error once.</a></li>
                                 </ul>
                             </div>
                             <div ng-show="csverrors.length == 0 && file">
-                                <div class="alert alert-success">Looks nice. You're good to go.</div>
-{#                                 <input type="text" ng-bind="msg" placeholder="A short description of your changes.">#}
-{#                                 <a href="#" ng-click="diff()" role="button" class="btn btn-success" ng-enabled="errors.length == 0">Get diff</a>#}
+                                <div ng-hide="httperror" class="alert alert-success">Looks nice. You're good to go.</div>
+                                <div ng-show="httperror" class="alert alert-danger">The Server responded: [[ httperror ]] Thats all we know.</div>
+                                <input type="text" ng-bind="msg" placeholder="A short description of your changes.">
+                                <a href="" ng-click="diff()" role="button" class="btn btn-success" ng-enabled="errors.length == 0">Get diff</a>
                             </div>
                             
                         </form>

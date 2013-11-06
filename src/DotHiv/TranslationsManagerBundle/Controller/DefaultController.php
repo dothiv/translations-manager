@@ -12,6 +12,17 @@ class DefaultController extends Controller
         return $this->render('DotHivTranslationsManagerBundle:Default:index.html.twig');
     }
 
+    public function diffAction()
+    {
+        $git = $this->get('git');
+        try {
+            $git->update();
+        } catch (\Exception $e) {
+            return new Response($e->getMessage(), 500);
+        }
+        return new Response();
+    }
+
 //     public function getCsvAction($key)
 //     {
 //         $url = 'https://docs.google.com/spreadsheet/ccc?key=' . $key . '&output=csv&hl&pref=2';

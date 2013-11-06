@@ -13,3 +13,6 @@ parameters:
 
     locale:            en
     secret:            ThisTokenIsNotSoSecretChangeIt
+
+    gitrepo:           /tmp/dothiv--dothiv
+    gitremote:         git@github.com:dothiv/dothiv.git
