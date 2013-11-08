@@ -36,7 +36,7 @@ class GitService {
         return $this->exec('git diff');
     }
 
-    public function commit($msg, $email, $name) {
+    public function commit($msg, $name, $email) {
         $sanitizer = '/^[A-Za-zöäüÖÄÜß0-9\.,; @-]*$/';
         if (!preg_match($sanitizer, $msg))
             throw new \Exception("Commit message can only contain A-z, numbers and . ; , but was '$msg'");
