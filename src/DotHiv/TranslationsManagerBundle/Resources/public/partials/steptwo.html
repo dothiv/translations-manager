@@ -39,7 +39,9 @@
             </select>
             <a class="btn btn-danger pull-right" href="" ng-click="ignoreCsvErrors()">Danger: ignore all errors</a>
             <ul>
-                <li ng-repeat="(id, csverror) in csverrors | limitTo: limit">[[ csverror ]] <a href="" ng-click="ignoreCsvError(id)">Ignore this error once.</a></li>
+                <li ng-repeat="(id, csverror) in csverrors | limitTo: limit track by $index">
+                    [[ csverror ]] <a href="" ng-click="ignoreCsvError(id)">Ignore this error once.</a>
+                </li>
             </ul>
         </div>
     </div>
