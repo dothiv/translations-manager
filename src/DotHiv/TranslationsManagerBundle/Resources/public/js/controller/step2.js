@@ -10,7 +10,8 @@ angular.module('transconv').controller('StepTwoController', ['$scope', '$http', 
                     return false;
                 }
                 // set the value, then we are done
-                base[key[0]] = val;
+                if (val.trim() != '')
+                    base[key[0]] = val;
                 return true;
             }
             // make sure base contains key[0]
