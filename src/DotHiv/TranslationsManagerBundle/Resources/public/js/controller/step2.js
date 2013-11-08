@@ -83,7 +83,8 @@ angular.module('transconv').controller('StepTwoController', ['$scope', '$http', 
                 })
                 .error(function(data, status, headers, config) {
                     // TODO
-                })
+                });
+            $scope.diff = null;
         }
 
         $scope.$watch('changeset.translations', function() {
