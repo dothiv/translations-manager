@@ -36,6 +36,21 @@ class GitService {
         return $this->exec('git diff');
     }
 
+    public function commit($msg, $email, $name) {
+        $sanitizer = '/^[A-Za-zöäüÖÄÜß0-9\.,; @]*$/';
+        if (!preg_match($sanitizer, $msg))
+            throw new \Exception("Commit message can only contain A-z, numbers and . ; , but was '$msg'");
+        if (!preg_match($sanitizer, $name))
+            throw new \Exception("Name can only contain A-z, numbers and . ; , but was '$name'");
+        if (!preg_match($sanitizer, $email))
+            throw new \Exception("Name can only contain A-z, numbers and . ; , but was '$email'");
+        return $this->exec("git commit -a -m 'trans(): $msg' --author='$name <$email>'");
+    }
+
+    public function log() {
+        return $this->exec('git log');
+    }
+
     private function cloneRepository() {
         if (!file_exists($this->path . '/.git')) {
             mkdir($this->path, 0700, true);

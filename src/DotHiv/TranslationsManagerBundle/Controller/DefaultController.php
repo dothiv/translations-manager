@@ -15,6 +15,21 @@ class DefaultController extends Controller
     public function diffAction()
     {
         $git = $this->get('git');
+        $this->prepareChanges();
+        return new Response(json_encode($git->diff()));
+    }
+
+    public function commitAction()
+    {
+        $git = $this->get('git');
+        $this->prepareChanges();
+        $data = json_decode($this->getRequest()->getContent());
+        $git->commit($data->msg, $data->name, $data->email);
+        return new Response(json_encode($git->log()));
+    }
+
+    private function prepareChanges() {
+        $git = $this->get('git');
 
         // parse input
         $data = json_decode($this->getRequest()->getContent());
@@ -26,26 +41,10 @@ class DefaultController extends Controller
             return new Response($e->getMessage(), 500);
         }
 
-        // make the changes
+        // prepare the changes
         $git->discard();
         foreach($data->files as $locale => $file) {
             $git->change('src/DotHiv/WebsiteCharityBundle/Resources/public/translations/language-'. $locale .'.json', $file);
         }
-
-        return new Response($git->diff());
     }
-
-//     public function getCsvAction($key)
-//     {
-//         $url = 'https://docs.google.com/spreadsheet/ccc?key=' . $key . '&output=csv&hl&pref=2';
-//         return new Response($url);
-//         $ch = curl_init($url);
-//         $ckfile = tempnam("/tmp", "curlcookie");
-//         curl_setopt ($ch, CURLOPT_COOKIEJAR, $ckfile);
-//         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-//         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-//         $csv = curl_exec($ch);
-//         unlink($ckfile);
-//         return new Response($csv);
-//     }
 }

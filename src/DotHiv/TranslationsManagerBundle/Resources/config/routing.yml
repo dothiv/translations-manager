@@ -5,3 +5,7 @@ dot_hiv_translations_manager_homepage:
 dot_hiv_translations_manager_diff:
     pattern:  /diff
     defaults: { _controller: DotHivTranslationsManagerBundle:Default:diff }
+
+dot_hiv_translations_manager_commit:
+    pattern:  /commit
+    defaults: { _controller: DotHivTranslationsManagerBundle:Default:commit }

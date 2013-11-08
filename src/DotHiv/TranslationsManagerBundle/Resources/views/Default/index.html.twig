@@ -1,90 +1,10 @@
-<!doctype html>
+<!DOCTYPE html>
 <html ng-app="transconv">
     <head>
         <title>DotHiv Translations Manager</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.1/css/bootstrap.min.css">
-        <style type="text/css">
-            /* Space out content a bit */
-            body {
-              padding-top: 20px;
-              padding-bottom: 20px;
-            }
-            
-            /* Everything but the jumbotron gets side spacing for mobile first views */
-            .header,
-            .marketing,
-            .footer {
-              padding-left: 15px;
-              padding-right: 15px;
-            }
-            
-            /* Custom page header */
-            .header {
-              border-bottom: 1px solid #e5e5e5;
-            }
-            /* Make the masthead heading the same height as the navigation */
-            .header h3 {
-              margin-top: 0;
-              margin-bottom: 0;
-              line-height: 40px;
-              padding-bottom: 19px;
-            }
-            
-            /* Custom page footer */
-            .footer {
-              padding-top: 19px;
-              color: #777;
-              border-top: 1px solid #e5e5e5;
-            }
-            
-            /* Customize container */
-            @media (min-width: 768px) {
-              .container {
-                max-width: 730px;
-              }
-            }
-            .container-narrow > hr {
-              margin: 30px 0;
-            }
-            
-            /* Main marketing message and sign up button */
-            .jumbotron {
-              text-align: center;
-              border-bottom: 1px solid #e5e5e5;
-            }
-            .jumbotron .btn {
-              font-size: 21px;
-              padding: 14px 24px;
-            }
-            
-            /* Supporting marketing content */
-            .marketing {
-              margin: 40px 0;
-            }
-            .marketing p + h4 {
-              margin-top: 28px;
-            }
-            
-            /* Responsive: Portrait tablets and up */
-            @media screen and (min-width: 768px) {
-              /* Remove the padding we set earlier */
-              .header,
-              .marketing,
-              .footer {
-                padding-left: 0;
-                padding-right: 0;
-              }
-              /* Space out the masthead */
-              .header {
-                margin-bottom: 30px;
-              }
-              /* Remove the bottom border on the jumbotron for visual effect */
-              .jumbotron {
-                border-bottom: 0;
-              }
-            }
-        </style>
+        <link rel="stylesheet" href="{{ asset('bundles/translationsmanager/custom.css') }}">
         <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
         <!--[if lt IE 9]>
@@ -92,151 +12,20 @@
           <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
         <![endif]-->
 
-        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
-        <script type="text/javascript">
-            var transconv = angular.module('transconv', [], function($interpolateProvider) {
-                $interpolateProvider.startSymbol('[[');
-                $interpolateProvider.endSymbol(']]');
-            });
+        <!-- angular awesomeness -->
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.1.5/angular.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.1.5/angular-resource.js"></script>
+        <script src="{{ asset('bundles/translationsmanager/js/app.js') }}"></script>
+        <script src="{{ asset('bundles/translationsmanager/js/upload.js') }}"></script>
+        <script src="{{ asset('bundles/translationsmanager/js/controller/step0.js') }}"></script>
+        <script src="{{ asset('bundles/translationsmanager/js/controller/step1.js') }}"></script>
+        <script src="{{ asset('bundles/translationsmanager/js/controller/step2.js') }}"></script>
 
-            transconv.directive("ngFileSelect",function(){
-                return {
-                    link: function($scope,el) {
-                        el.bind("change", function(e) {
-                            $scope.file = (e.srcElement || e.target).files[0];
-                            $scope.getFile();
-                        });
-                    }
-                };
-            });
-        </script>
-        <script src="{{ asset('bundles/translationsmanager/upload.js') }}"></script>
-        <script type="text/javascript">
-            var REGEX_KEY = /^([a-zA-Z][a-zA-Z0-9]*\.)*[a-zA-Z][a-zA-Z0-9]*$/g;
-
-            function setKey(base, path, val) {
-                key = path.split('.');
-                // check if path contains no dot anymore
-                if (key[0] == path || !angular.isObject(base)) {
-                    // check if there's already a value
-                    if (!angular.isObject(base) || key[0] in base) {
-                        return false;
-                    }
-                    // set the value, then we are done
-                    base[key[0]] = val;
-                    return true;
-                }
-                // make sure base contains key[0]
-                if (!(key[0] in base))
-                    base[key[0]] = {};
-                // recursive call with new base and shortened path
-                if (setKey(base[key[0]], path.split('.').splice(1).join('.'), val)) {
-                    // success
-                    return base;
-                } else {
-                    // error
-                    return false;
-                }
-            }
-
-            transconv.controller('convertController', ['$scope', '$http', 'fileReader', function($scope, $http, fileReader) {
-                    function getJsonFromCsv(data, keyCol, valCol) {
-                        var csv = $.csv.toArrays(data);
-                        var keys = [];
-                        var vals = {};
-                        var errors = [];
-                        var tree = {};
-
-                        angular.forEach(csv, function(row) {
-                            var key = row[keyCol];
-                            var val = row[valCol];
-                            keys.push();
-                            if (!key.match(REGEX_KEY))
-                                errors.push('The key "' + key + '" is invalid. Please only use A-z, 0-9, dots for seperation and no numbers in the beginning or after dots.');
-                            if (key in vals)
-                                errors.push('The key "' + key + '" is used twice.');
-                            vals[key] = val;
-                        });
-
-                        keys.sort();
-
-                        angular.forEach(vals, function(val, key) {
-                            if (!key.match(REGEX_KEY)) return;
-                            if (!setKey(tree, key, val))
-                                errors.push('A prefix of the key "' + key + '" is already in use.');
-                        });
-
-                        return {tree: tree, errors: errors};
-                    };
-
-                    function processCsvFile(csv) {
-                        $scope.translations = {};
-                        $scope.csverrors = [];
-                        angular.forEach({'de':2, 'en':3}, function(valCol, locale) {
-                            var result = getJsonFromCsv(csv, 1, valCol);
-                            $scope.translations[locale] = result.tree;
-                            $scope.csverrors = $scope.csverrors.concat(result.errors);
-                        });
-                    }
-
-                    $scope.$watch('translations', function() {
-                        $scope.jsonpreview = JSON.stringify($scope.translations, undefined, 2);
-                    });
-
-                    $scope.$watch('file', function() {
-                        if (!$scope.file) {
-                            $scope.translations = {};
-                            $scope.csverrors = [];
-                            $scope.httperror = false;
-                            $('#resetbtn').click(); // evil hack to clear file input. Ugly as hell, but working :-(
-                        }
-                    });
-
-                    $scope.getFile = function () {
-                        fileReader.readAsText($scope.file, $scope).then(processCsvFile);
-                    };
-
-                    $scope.diff = function() {
-                        var data = {
-                                    user: 'nils.wisiol@dothiv.org',
-                                    files: {},
-                                };
-
-                        angular.forEach($scope.translations, function(translations, locale) {
-                            data.files[locale] = JSON.stringify(translations, undefined, 2)
-                        });
-                        $scope.commiting = true;
-                        $scope.httperror = false; 
-                        $http.post('{{ path('dot_hiv_translations_manager_diff') }}', data)
-                            .success(function(data, status, headers, config) {
-                                console.log("http success");
-                                $scope.jsonpreview = data;
-                                $scope.commiting = false;
-                            })
-                            .error(function(data, status, headers, config) {
-                                console.log("httperror: " + data);
-                                $scope.httperror = data; 
-                                $scope.commiting = false;
-                            });
-                    };
-
-                    $scope.ignoreCsvError = function(id) {
-                        $scope.csverrors.splice(id,1);
-                    };
-
-                    $scope.ignoreCsvErrors = function() {
-                        $scope.csverrors = [];
-                    };
-
-                    $scope.limit = 5;
-                    $scope.convert = function() {
-                };
-            }]);
-        </script>
+        <!-- also jquery -->
         <script src="http://code.jquery.com/jquery-1.8.2.js"></script>
-        <script src="{{ asset('bundles/translationsmanager/jquery.csv-0.71.min.js') }}"></script>
+        <script src="{{ asset('bundles/translationsmanager/js/jquery.csv-0.71.min.js') }}"></script>
     </head>
-    <body ng-controller="convertController">
+    <body>
 
         <div class="container">
             <div class="header">
@@ -245,74 +34,8 @@
                 </ul>
                 <h3 class="text-muted">dotHIV Translations Manager</h3>
             </div>
-            <div class="jumbotron">
-                <h1>dotHIV Translations Manager</h1>
-                <p class="lead">This manager helps you converting a Google spreadsheet into a angular.js-compatible JSON translations file and update the repository accordingly.</p>
-            </div>
-            <div class="row marketing">
-                <div class="col-lg-12">
-                    <h3>1. Choose the Translations</h3>
-                    <div class="row">
-                        <div class="col-lg-6">
-                            <h4>Get the Charity Translations</h4>
-                            <p>Download the CSV file from Google Drive.</p>
-                            <p><a class="btn btn-primary" role="button" href="https://docs.google.com/spreadsheet/ccc?key=0AscJmfwzo_mPdHlYMkZRdG9MNGU4XzZpRXZsUW43clE&output=csv">Download</a></p>
-                        </div>
-                        <div class="col-lg-6">
-                            <h4>Get some other Translations</h4>
-                            <p>Download the CSV file from Google Drive.</p>
-                            <p><input type="text" ng-model="doc.key" placeholder="Google Document Key"><a class="btn btn-primary" role="button" href="https://docs.google.com/spreadsheet/ccc?key=[[ doc.key ]]&output=csv">Download</a></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row marketing">
-                <div class="col-lg-12">
-                    <h3>2. Update the Repository</h3>
-                
-                    <a href="" class="btn btn-default pull-right" ng-click="file=false" ng-show="file">Remove file and start over</a>
-                    <h4>Update Charity Translations</h4>
-                    <p>Commit the new translations permanently to the github repository.</p>
-                    
-                    <div ng-hide="commiting">
-                        <form novalidate class="simple-form">
-                            <input ng-hide="file" type="file" ng-file-select="onFileSelect($files)" >
-                            <input type="reset" id="resetbtn" ng-show="false">
-                            
-                            <div ng-show="csverrors.length > 0 && file">
-                                <div class="alert alert-danger">Some things need to be fixed in this CSV file.</div>
-                                <select ng-model='limit'>
-                                    <option value='5'>Show first 5</option>
-                                    <option value='25'>Show first 25</option>
-                                    <option value='50'>Show first 50</option>
-                                    <option value='9007199254740992'>Show all</option> <!-- javascript int max -->
-                                </select>
-                                <a class="btn btn-danger pull-right" href="" ng-click="ignoreCsvErrors()">Danger: ignore all errors</a>
-                                <ul>
-                                    <li ng-repeat="(id, csverror) in csverrors | limitTo: limit">[[ csverror ]] <a href="" ng-click="ignoreCsvError(id)">Ignore this error once.</a></li>
-                                </ul>
-                            </div>
-                            <div ng-show="csverrors.length == 0 && file">
-                                <div ng-hide="httperror" class="alert alert-success">Looks nice. You're good to go.</div>
-                                <div ng-show="httperror" class="alert alert-danger">The Server responded: [[ httperror ]] Thats all we know.</div>
-                                <input type="text" ng-bind="msg" placeholder="A short description of your changes.">
-                                <a href="" ng-click="diff()" role="button" class="btn btn-success" ng-enabled="errors.length == 0">Get diff</a>
-                            </div>
-                            
-                        </form>
-                    </div>
-                    <div ng-show="committing">
-                        <div class="alert alert-info">Stand back and let me do that for you.</div>
-                    </div>
-                    
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-12">
-                    <h3>Preview</h3>
-                    <pre style="overflow-x: scroll;">[[ jsonpreview ]]</pre>
-                </div>
-            </div>
+
+            <div ng-view></div>
         </div>
 
         <div class="footer">
@@ -321,3 +44,4 @@
 
     </body>
 </html>
+

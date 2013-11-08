@@ -1,0 +1,35 @@
+<div class="row marketing">
+    <div class="col-lg-12">
+        <h3>1. Choose the Translations</h3>
+        <div class="row">
+            <div class="col-lg-12">
+                <p>
+                    Choose the Google Spreadsheet file you want to use as a new source for translations on the dotHIV platform. Any spreadsheet file is acceptable; however the second (B) column must contain the keys followed by the German translation (C column) and the English translation (D column). Everything else, including formatting, does not matter. Formatting like bold fonts or font size won't be recognized.
+                </p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <h4>Get the Charity Translations</h4>
+                <p>Use this built-in link to get the translations for the dotHIV Charity Website.</p>
+                <p><a class="btn btn-primary" role="button" href="https://docs.google.com/spreadsheet/ccc?key=0AscJmfwzo_mPdHlYMkZRdG9MNGU4XzZpRXZsUW43clE&output=csv">Download</a></p>
+            </div>
+            <div class="col-lg-6">
+                <h4>Get some other Translations</h4>
+                <p>Looking for some other Google spreadsheet? Paste the document key right here.</p>
+                <p>
+                    <form role="form">
+                        <div class="form-group">
+                            <label for="documentkey">Google Document Key</label>
+                            <input type="text" ng-model="key" class="form-control" id="documentkey" placeholder="Can be found in the URL to your spreadsheet. Looks somewhat like 0AscJmfwzo_mPdHlYMkZRdG9MNGU4XzZpRXZsUW43clE."> 
+                        </div>
+                        <a class="btn btn-primary" ng-disabled="!key" role="button" href="https://docs.google.com/spreadsheet/ccc?key=[[ key ]]&output=csv">Download</a></p>
+                    </form>
+                </p>
+            </div>
+            <div class="col-lg-12">
+                <a href="#/step2" class="btn btn-success pull-right">Got it, next <span class="glyphicon glyphicon-arrow-right"></span></a>
+            </div>
+        </div>
+    </div>
+</div>
