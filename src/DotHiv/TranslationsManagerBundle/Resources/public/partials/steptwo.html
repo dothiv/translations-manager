@@ -89,7 +89,10 @@
         <div class="col-lg-12">
             <h4>Thank You. Your Changes have been Permanently Commited.</h4>
             <p>
-                Enjoy your new translations.
+                Enjoy your new translations for
+                <ul>
+                    <li ng-repeat="(locale, translations) in changeset.translations"><a href="download/[[locale]]">[[locale]]</a></li>
+                </ul>
             </p>
             <p>
                 <a href="#/step1" class="btn btn-default">Yay, update more translations!</a>

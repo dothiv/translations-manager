@@ -51,6 +51,10 @@ class GitService {
         return $this->exec('git log');
     }
 
+    public function cat($src) {
+        return $this->exec('cat ' . $src);
+    }
+
     private function cloneRepository() {
         if (!file_exists($this->path . '/.git')) {
             mkdir($this->path, 0700, true);

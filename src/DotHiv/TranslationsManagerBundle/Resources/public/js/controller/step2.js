@@ -116,8 +116,10 @@ angular.module('transconv').controller('StepTwoController', ['$scope', '$http', 
                 $scope.file.then(function (result) {
                     processCsvFile(result);
                 });
-            else
+            else {
                 $scope.target = false;
+                $scope.commited = false;
+            }
         });
 
         $scope.ignoreCsvError = function(id) {
@@ -133,7 +135,7 @@ angular.module('transconv').controller('StepTwoController', ['$scope', '$http', 
             { name: "somebody else" },
             { name: "Nils Wisiol",    email: "nils.wisiol@dothiv.org" },
             { name: "Benedikt Budig", email: "bb@dothiv.org" },
-            { name: "Andre Löffler",  email: "info@andre-loeffler.net" },
+            { name: "Andre Löffler",  email: "github@andre-loeffler.net" },
             { name: "Greta Jeske",    email: "gj@dothiv.org"},
         ];
 

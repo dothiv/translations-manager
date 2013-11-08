@@ -28,7 +28,16 @@ class DefaultController extends Controller
         return new Response(json_encode($git->log()));
     }
 
-    private function prepareChanges() {
+    public function downloadAction($locale)
+    {
+        return new Response($this->get('git')->cat($this->getLangFilePath($locale)), 200, array(
+                    'Content-Type' => 'text/json',
+                    'Content-Dispositon' => 'attachment; filename="language-'.$locale.'.json";',
+                ));
+    }
+
+    private function prepareChanges() 
+    {
         $git = $this->get('git');
 
         // parse input
@@ -44,7 +53,12 @@ class DefaultController extends Controller
         // prepare the changes
         $git->discard();
         foreach($data->files as $locale => $file) {
-            $git->change('src/DotHiv/WebsiteCharityBundle/Resources/public/translations/language-'. $locale .'.json', $file);
+            $git->change($this->getLangFilePath($locale), $file);
         }
+    }
+
+    private function getLangFilePath($locale)
+    {
+        return 'src/DotHiv/WebsiteCharityBundle/Resources/public/translations/language-'. $locale .'.json';
     }
 }
